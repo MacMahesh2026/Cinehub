@@ -8,7 +8,8 @@ on:
 jobs:
   test:
     name: Run Symfony Test Suite
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04 
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -16,9 +17,9 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4' # Change to your exact PHP version (e.g., 8.1, 8.3)
+          php-version: '8.4'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
-          tools: phpunit
+          tools: phpunit # Installs global backup fallback version
           coverage: none
 
       - name: Check Composer Version
@@ -36,30 +37,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
+      # Crucial: Fixes Symfony recipe issues by forcing dev dependencies to install completely
       - name: Install Dependencies
-        run: composer install --no-ansi --no-interaction --no-progress
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Execute Symfony Tests
-        run: vendor/bin/phpunit
-
-  merge-to-master:
-    name: Merge Dev to Master
-    needs: test
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Merge dev into master
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@://github.com"
-          
-          git fetch origin master
-          git checkout master
-          git merge origin/dev --ff-only
-          git push origin master
+          if [ -f "bin/phpunit" ]; then
+            echo "Running via Symfony phpunit binary..."
+            php bin/phpunit
+          elif [ -f "vendor/bin/phpunit" ]; then
+            echo "Running via Vendor phpunit binary..."
+            vendor/bin/phpunit
+          else
+            echo "Running via Global Fallback phpunit binary..."
+            phpunit
+          fi
