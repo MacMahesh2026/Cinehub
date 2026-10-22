@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Bookings - CineHub</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        .navbar {
+            background: #111827;
+            color: white;
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .booking-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .booking-header h2 {
+            margin: 0;
+        }
+
+        .status {
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .booking-info {
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .seats {
+            margin-top: 15px;
+        }
+
+        .seat {
+            display: inline-block;
+            background: #e5e7eb;
+            padding: 6px 12px;
+            margin: 4px;
+            border-radius: 5px;
+        }
+
+        .amount {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .empty {
+            background: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <strong>🎬 CineHub</strong>
+
+    <div>
+        <a href="{{ path('home') }}">Movies</a>
+        <a href="{{ path('my_bookings') }}">My Bookings</a>
+        <a href="{{ path('app_logout') }}">Logout</a>
+    </div>
+
+</nav>
+
+<main class="container">
+
+    <h1>My Bookings</h1>
+
+    {% for booking in bookings %}
+
+        <div class="booking-card">
+
+            <div class="booking-header">
+
+                <h2>
+                    {{ booking.showtime.movie.title }}
+                </h2>
+
+                <span class="status">
+                    {{ booking.status }}
+                </span>
+
+            </div>
+
+            <div class="booking-info">
+
+                <strong>Booking Reference:</strong>
+                {{ booking.bookingReference }}
+
+                <br>
+
+                <strong>Theatre:</strong>
+                {{ booking.showtime.screen.theatre.name }}
+
+                <br>
+
+                <strong>Screen:</strong>
+                {{ booking.showtime.screen.name }}
+
+                <br>
+
+                <strong>Showtime:</strong>
+                {{ booking.showtime.startTime|date('d M Y, h:i A') }}
+
+            </div>
+
+            <div class="seats">
+
+                <strong>Seats:</strong>
+
+                {% for bookingSeat in booking.bookingSeats %}
+
+                    <span class="seat">
+                        {{ bookingSeat.seat.seatNumber }}
+                    </span>
+
+                {% endfor %}
+
+            </div>
+
+            <div class="amount">
+                Total: ₹{{ booking.totalAmount }}
+            </div>
+
+            <div style="margin-top: 15px;">
+                <a href="{{ path('booking_details', {id: booking.id}) }}">
+                    View Details
+                </a>
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty">
+            <h2>No bookings yet</h2>
+
+            <p>
+                You haven't booked any movies yet.
+            </p>
+
+            <a href="{{ path('home') }}">
+                Browse Movies
+            </a>
+        </div>
+
+    {% endfor %}
+
+</main>
+
+</body>
+</html>

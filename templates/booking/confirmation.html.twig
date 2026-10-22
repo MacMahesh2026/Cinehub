@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Booking Confirmed{% endblock %}
+
+{% block body %}
+
+<div style="max-width: 700px; margin: 50px auto; font-family: Arial;">
+
+    <h1>Booking Confirmed 🎉</h1>
+
+    <p>Your booking has been successfully created.</p>
+
+    <hr>
+
+    <h3>Booking Reference</h3>
+    <p><strong>{{ booking.bookingReference }}</strong></p>
+
+    <h3>Movie</h3>
+    <p>{{ booking.showtime.movie.title }}</p>
+
+    <h3>Theatre</h3>
+    <p>{{ booking.showtime.screen.theatre.name }}</p>
+
+    <h3>Screen</h3>
+    <p>{{ booking.showtime.screen.name }}</p>
+
+    <h3>Showtime</h3>
+    <p>
+        {{ booking.showtime.startTime|date('d M Y, h:i A') }}
+    </p>
+
+    <h3>Seats</h3>
+
+    {% for bookingSeat in booking.bookingSeats %}
+        <span style="
+            display:inline-block;
+            padding:8px 12px;
+            background:#eee;
+            margin:4px;
+            border-radius:5px;
+        ">
+            {{ bookingSeat.seat.seatNumber }}
+        </span>
+    {% endfor %}
+
+    <h2>
+        Total: ₹{{ booking.totalAmount }}
+    </h2>
+
+    <a href="{{ path('home') }}">
+        Back to Movies
+    </a>
+
+</div>
+
+{% endblock %}

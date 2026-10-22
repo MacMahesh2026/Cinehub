@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Booking Details{% endblock %}
+
+{% block body %}
+
+<h1>Booking Details</h1>
+
+<div>
+    <h2>{{ booking.showtime.movie.title }}</h2>
+
+    <p>
+        <strong>Booking Reference:</strong>
+        {{ booking.bookingReference }}
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+        {{ booking.status }}
+    </p>
+
+    <p>
+        <strong>Theatre:</strong>
+        {{ booking.showtime.screen.theatre.name }}
+    </p>
+
+    <p>
+        <strong>Screen:</strong>
+        {{ booking.showtime.screen.name }}
+    </p>
+
+    <p>
+        <strong>Show Time:</strong>
+        {{ booking.showtime.startTime|date('d M Y, h:i A') }}
+    </p>
+
+    <p>
+        <strong>Price per Seat:</strong>
+        ₹{{ booking.showtime.price }}
+    </p>
+
+    <h3>Seats</h3>
+
+    <ul>
+        {% for bookingSeat in booking.bookingSeats %}
+            <li>
+                {{ bookingSeat.seat.seatNumber }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p>
+        <strong>Total Amount:</strong>
+        ₹{{ booking.totalAmount }}
+    </p>
+
+    {% if booking.status == 'CONFIRMED' %}
+
+        <form
+            method="POST"
+            action="{{ path('booking_cancel', {id: booking.id}) }}"
+            style="margin-top: 20px;"
+        >
+            <input
+                type="hidden"
+                name="_token"
+                value="{{ cancelToken }}"
+            >
+
+            <button type="submit">
+                Cancel Booking
+            </button>
+        </form>
+
+    {% endif %}
+
+    <br>
+
+    <a href="{{ path('my_bookings') }}">
+        ← Back to My Bookings
+    </a>
+</div>
+
+{% endblock %}

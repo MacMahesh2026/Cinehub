@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Select Seats - CineHub</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        .navbar {
+            background: #111827;
+            color: white;
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .show-info {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .show-info h1 {
+            margin-top: 0;
+        }
+
+        .show-meta {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .seat-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .screen {
+            background: #374151;
+            color: white;
+            padding: 12px;
+            margin: 0 auto 40px;
+            max-width: 500px;
+            border-radius: 5px;
+        }
+
+        .seat-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .seat {
+            width: 45px;
+            height: 40px;
+            border: 1px solid #999;
+            border-radius: 6px;
+            background: #e5e7eb;
+            cursor: pointer;
+        }
+
+        .seat:hover {
+            background: #d1d5db;
+        }
+
+        .seat.selected {
+            background: #2563eb;
+            color: white;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            border: 1px solid #999;
+        }
+
+        .legend-box.selected {
+            background: #2563eb;
+        }
+
+        .summary {
+            border-top: 1px solid #ddd;
+            margin-top: 25px;
+            padding-top: 25px;
+        }
+
+        .selected-seats {
+            min-height: 25px;
+            margin: 10px 0;
+        }
+
+        .confirm-button {
+            border: none;
+            background: #111827;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .confirm-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .seat.booked {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .seat.booked:hover {
+            background: #9ca3af;
+        }
+
+        .legend-box.booked {
+            background: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <strong>🎬 CineHub</strong>
+
+    <a href="{{ path('movie_details', {id: showtime.movie.id}) }}">
+        ← Back to Movie
+    </a>
+</nav>
+
+<main class="container">
+
+    <section class="show-info">
+
+        <h1>{{ showtime.movie.title }}</h1>
+
+        <div class="show-meta">
+            <strong>Theatre:</strong>
+            {{ showtime.screen.theatre.name }}
+            <br>
+
+            <strong>Screen:</strong>
+            {{ showtime.screen.name }}
+            <br>
+
+            <strong>Showtime:</strong>
+            {{ showtime.startTime|date('d M Y, h:i A') }}
+            <br>
+
+            <strong>Price per seat:</strong>
+            ₹{{ showtime.price }}
+        </div>
+
+    </section>
+
+
+    <section class="seat-section">
+
+        <h2>Select Your Seats</h2>
+
+        <div class="screen">
+            SCREEN
+        </div>
+
+
+        {% set currentRow = null %}
+
+        {% for seat in seats %}
+
+            {% if currentRow != seat.rowName %}
+
+                {% if currentRow is not null %}
+                    </div>
+                {% endif %}
+
+                {% set currentRow = seat.rowName %}
+
+                <div class="seat-row">
+
+            {% endif %}
+
+            {% set isBooked = seat.id in bookedSeatIds %}
+
+            <button
+                type="button"
+                class="seat {{ isBooked ? 'booked' : '' }}"
+                data-seat-id="{{ seat.id }}"
+                data-seat-number="{{ seat.seatNumber }}"
+                {% if isBooked %}disabled{% endif %}
+            >
+                {{ seat.seatNumber }}
+            </button>
+
+        {% endfor %}
+
+        {% if currentRow is not null %}
+            </div>
+        {% endif %}
+
+
+        <div class="legend">
+
+            <div class="legend-item">
+                <div class="legend-box"></div>
+                Available
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-box selected"></div>
+                Selected
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-box booked"></div>
+                Booked
+            </div>
+
+        </div>
+
+
+        <div class="summary">
+
+            <h3>Booking Summary</h3>
+
+            <div>
+                Selected Seats:
+            </div>
+
+            <div
+                id="selected-seats"
+                class="selected-seats"
+            >
+                None
+            </div>
+
+            <div>
+                Total:
+                ₹<span id="total-price">0.00</span>
+            </div>
+
+            <br>
+
+            <form
+                method="POST"
+                action="{{ path('showtime_book', {id: showtime.id}) }}"
+                id="booking-form"
+            >
+                <div id="selected-seat-inputs"></div>
+
+                <button
+                    type="submit"
+                    id="continue-button"
+                    class="confirm-button"
+                    disabled
+                >
+                    Continue
+                </button>
+            </form>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+    const seatButtons = document.querySelectorAll('.seat');
+
+    const selectedSeatsElement =
+        document.getElementById('selected-seats');
+
+    const totalPriceElement =
+        document.getElementById('total-price');
+
+    const continueButton =
+        document.getElementById('continue-button');
+
+    const selectedSeatInputs =
+        document.getElementById('selected-seat-inputs');
+
+    const pricePerSeat =
+        {{ showtime.price }};
+
+    const selectedSeats = new Set();
+
+
+    seatButtons.forEach(function (seatButton) {
+
+        seatButton.addEventListener('click', function () {
+
+            const seatId = this.dataset.seatId;
+
+            if (selectedSeats.has(seatId)) {
+
+                selectedSeats.delete(seatId);
+
+                this.classList.remove('selected');
+
+            } else {
+
+                selectedSeats.add(seatId);
+
+                this.classList.add('selected');
+            }
+
+            updateSummary();
+        });
+    });
+
+
+    function updateSummary()
+    {
+        const selectedNumbers = [];
+
+        selectedSeatInputs.innerHTML = '';
+
+        selectedSeats.forEach(function (seatId) {
+
+            const button =
+                document.querySelector(
+                    '[data-seat-id="' + seatId + '"]'
+                );
+
+            if (!button) {
+                return;
+            }
+
+            const seatNumber = button.dataset.seatNumber;
+
+            selectedNumbers.push(seatNumber);
+
+
+            // Create hidden input for Symfony
+            const input = document.createElement('input');
+
+            input.type = 'hidden';
+            input.name = 'seat_ids[]';
+            input.value = seatId;
+
+            selectedSeatInputs.appendChild(input);
+        });
+
+
+        // Selected seat numbers
+        selectedSeatsElement.textContent =
+            selectedNumbers.length > 0
+                ? selectedNumbers.join(', ')
+                : 'None';
+
+
+        // Total amount
+        const total =
+            selectedNumbers.length * pricePerSeat;
+
+        totalPriceElement.textContent =
+            total.toFixed(2);
+
+
+        // Enable/disable Continue button
+        continueButton.disabled =
+            selectedNumbers.length === 0;
+    }
+</script>
+
+</body>
+</html>
