@@ -57,7 +57,7 @@ jobs:
 
   deploy-to-aws:
     name: Production Deployment
-    needs: merge-to-master # Waits for the merge to finish successfully
+    needs: merge-to-master
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -70,18 +70,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Execute Symfony Deployment via AWS SSM
-        uses: peterkimzz/aws-ssm-run-command@v2.0.0
-        with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          instance-ids: ${{ secrets.AWS_INSTANCE_ID }}
-          working-directory: /var/www/cinehub
-          command: |
-            sudo -u ubuntu -H sh -c "
-              cd /var/www/cinehub
-              git fetch origin master
-              git reset --hard origin/master
-              composer install --no-dev --optimize-autoloader --no-interaction
-              php bin/console cache:clear --env=prod
-              php bin/console cache:warmup --env=prod
-            "
+      # FIX: Replaced the deleted third-party action with the official AWS CLI native tool
+      - name: Execute Symfony Deployment via AWS CLI SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploying master branch to production server" \
+            --parameters '{"commands":[
+              "sudo -u ubuntu -H sh -c \"cd /var/www/your-symfony-project && git fetch origin master && git reset --hard origin/master && composer install --no-dev --optimize-autoloader --no-interaction && php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod\""
+            ]}' \
+            --region "${{ secrets.AWS_REGION }}"
