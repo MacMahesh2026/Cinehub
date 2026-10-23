@@ -5,6 +5,11 @@ on:
     branches:
       - dev
 
+env:
+  APP_SECRET: ${{ secrets.APP_SECRET }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE }}
+
 jobs:
   test:
     name: Run Symfony Test Suite
