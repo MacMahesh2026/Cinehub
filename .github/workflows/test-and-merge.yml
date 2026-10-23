@@ -26,9 +26,6 @@ jobs:
           tools: phpunit
           coverage: none
 
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
-
       - name: Create .env for CI
         run: |
           cp .env.example .env
@@ -36,6 +33,9 @@ jobs:
           openssl genrsa -out config/jwt/private.pem 2048
           openssl rsa -in config/jwt/private.pem -pubout -out config/jwt/public.pem
 
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+    
       - name: Execute Symfony Tests
         run: |
           if [ -f "bin/phpunit" ]; then
