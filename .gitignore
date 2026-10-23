@@ -1,16 +1,34 @@
+### Symfony / App secrets ###
+.env
 .env.local
 .env.local.php
 .env.*.local
-.env.test.local
+.env.dev
+.env.test
+.env.production
+.env.production.local
 
+!.env.example
+!.env.local.example
+!.env.test.example
+!.env.prod.example
+
+config/jwt/private.pem
+config/jwt/public.pem
+
+### Composer ###
 /vendor/
+
+### Symfony cache/logs ###
 /var/cache/
 /var/log/
 /var/sessions/
 
+### PHPUnit ###
 .phpunit.result.cache
 coverage/
 
+### IDE / OS ###
 .idea/
 .vscode/
 .DS_Store
