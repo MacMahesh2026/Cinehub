@@ -25,7 +25,7 @@ jobs:
         with:
           aws-region: ${{ secrets.AWS_REGION }}
           instance-ids: ${{ secrets.AWS_INSTANCE_ID }}
-          working-directory: /var/www/your-symfony-project # Replace with your actual server path
+          working-directory: /var/www/cinehub # Replace with your actual server path
           command: |
             # 1. Fetch the latest code from master branch
             git fetch origin master
