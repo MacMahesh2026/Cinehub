@@ -8,8 +8,7 @@ on:
 jobs:
   test:
     name: Run Symfony Test Suite
-    runs-on: ubuntu-24.04
-
+    runs-on: ubuntu-24.04 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -19,10 +18,48 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite
+          tools: phpunit
           coverage: none
 
       - name: Install Dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Execute Symfony Tests
-        run: ./vendor/bin/phpunit
+        run: |
+          if [ -f "bin/phpunit" ]; then
+            php bin/phpunit
+          elif [ -f "vendor/bin/phpunit" ]; then
+            vendor/bin/phpunit
+          else
+            phpunit
+          fi
+
+  merge-to-master:
+    name: Merge Dev to Master
+    needs: test # Ensures this ONLY runs if the 'test' job above passes successfully
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # Explicitly requests write permissions for this specific job
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }} # Uses built-in token to authenticate the push
+
+      - name: Force Merge dev into master
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          
+          # Fetch tracking states for both branches
+          git fetch origin dev master
+          
+          # Switch to master branch natively
+          git checkout master
+          
+          # Merge dev into master without creating a merge commit (clean fast-forward)
+          git merge origin/dev --ff-only
+          
+          # Push changes up to the remote master branch
+          git push origin master
