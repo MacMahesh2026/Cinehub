@@ -70,14 +70,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # FIX: Replaced the deleted third-party action with the official AWS CLI native tool
       - name: Execute Symfony Deployment via AWS CLI SSM
         run: |
           aws ssm send-command \
             --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploying master branch to production server" \
-            --parameters '{"commands":[
-              "sudo -u ubuntu -H sh -c \"cd /var/www/cinehub && git fetch origin master && git reset --hard origin/master && composer install --no-dev --optimize-autoloader --no-interaction && php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod\""
-            ]}' \
+            --parameters '{"commands":["sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && git fetch origin master && git checkout master && git reset --hard origin/master && git clean -fd && composer install --no-dev --optimize-autoloader --no-interaction\""],"executionTimeout":["1800"]}' \
             --region "${{ secrets.AWS_REGION }}"
