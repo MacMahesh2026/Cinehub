@@ -78,6 +78,6 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploying master branch to production server" \
             --parameters '{"commands":[
-              "sudo -u ubuntu -H sh -c \"cd /var/www/your-symfony-project && git fetch origin master && git reset --hard origin/master && composer install --no-dev --optimize-autoloader --no-interaction && php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod\""
+              "sudo -u ubuntu -H sh -c \"cd /var/www/cinehub && git fetch origin master && git reset --hard origin/master && composer install --no-dev --optimize-autoloader --no-interaction && php bin/console cache:clear --env=prod && php bin/console cache:warmup --env=prod\""
             ]}' \
             --region "${{ secrets.AWS_REGION }}"
