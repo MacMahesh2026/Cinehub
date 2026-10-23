@@ -58,13 +58,13 @@ jobs:
   deploy-to-aws:
     name: Production Deployment
     needs: merge-to-master
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5-node24
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
