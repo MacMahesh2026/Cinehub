@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Run Symfony Test Suite
-    runs-on: ubuntu-24.04 
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
@@ -36,7 +36,7 @@ jobs:
 
   merge-to-master:
     name: Merge Dev to Master
-    needs: test # Waits for tests to pass successfully
+    needs: test
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -70,11 +70,97 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Execute Symfony Deployment via AWS CLI SSM
+      - name: Debug AWS deployment inputs
+        env:
+          AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          aws ssm send-command \
-            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+          set -euxo pipefail
+          echo "========== AWS DEBUG =========="
+          echo "GITHUB_REF=${GITHUB_REF}"
+          echo "GITHUB_SHA=${GITHUB_SHA}"
+          echo "AWS_REGION=${AWS_REGION}"
+          echo "AWS_INSTANCE_ID=${AWS_INSTANCE_ID}"
+          aws sts get-caller-identity
+
+      - name: Deploy to AWS EC2 via SSM
+        env:
+          AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          set -euxo pipefail
+
+          echo "Starting deployment to AWS EC2 instance: ${AWS_INSTANCE_ID}"
+
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${AWS_INSTANCE_ID}" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploying master branch to production server" \
-            --parameters '{"commands":["sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && git fetch origin master && git checkout master && git reset --hard origin/master && git clean -fd && composer install --no-dev --optimize-autoloader --no-interaction\""],"executionTimeout":["1800"]}' \
-            --region "${{ secrets.AWS_REGION }}"
+            --comment "Deploying master branch to production server - $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --parameters '{
+              "commands":[
+                "set -euxo pipefail",
+                "echo \"==> Who am I?\"",
+                "whoami",
+                "echo \"==> Check app folder\"",
+                "ls -ld /var/www/cinehub || true",
+                "echo \"==> Check repo status\"",
+                "sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && git status --short --branch || true\"",
+                "echo \"==> Pull latest code from master\"",
+                "sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && git fetch origin master && git checkout master && git reset --hard origin/master && git clean -fd\"",
+                "echo \"==> Install Composer dependencies\"",
+                "sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && composer install --no-interaction --prefer-dist --no-progress\"",
+                "echo \"==> Clear Symfony cache\"",
+                "sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && php bin/console cache:clear --env=prod\"",
+                "echo \"==> Run Doctrine migrations\"",
+                "sudo -u ubuntu -H bash -lc \"cd /var/www/cinehub && php bin/console doctrine:migrations:migrate --no-interaction || true\"",
+                "echo \"==> Restart web server\"",
+                "sudo systemctl restart nginx || sudo systemctl restart apache2 || true",
+                "echo \"==> Deployment finished successfully\""
+              ]
+            }' \
+            --region "${AWS_REGION}" \
+            --query 'Command.CommandId' \
+            --output text)
+
+          echo "SSM Command ID: ${COMMAND_ID}"
+
+          STATUS="Pending"
+          for i in $(seq 1 30); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${AWS_INSTANCE_ID}" \
+              --query 'Status' \
+              --output text \
+              --region "${AWS_REGION}" || true)
+
+            echo "Current SSM status: ${STATUS}"
+
+            if [ "${STATUS}" = "Success" ] || [ "${STATUS}" = "Failed" ] || [ "${STATUS}" = "Cancelled" ] || [ "${STATUS}" = "TimedOut" ]; then
+              break
+            fi
+
+            sleep 10
+          done
+
+          echo "Final SSM status: ${STATUS}"
+
+          echo "========== Standard Output =========="
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${AWS_INSTANCE_ID}" \
+            --query 'StandardOutputContent' \
+            --output text \
+            --region "${AWS_REGION}" || true
+
+          echo "========== Standard Error =========="
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${AWS_INSTANCE_ID}" \
+            --query 'StandardErrorContent' \
+            --output text \
+            --region "${AWS_REGION}" || true
+
+          if [ "${STATUS}" != "Success" ]; then
+            echo "AWS deployment failed."
+            exit 1
+          fi
