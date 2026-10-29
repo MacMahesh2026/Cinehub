@@ -1,0 +1,47 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  APP_SECRET: ${{ secrets.APP_SECRET }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE }}
+
+jobs:
+  deploy:
+    name: Production Deployment
+    runs-on: ubuntu-24.04
+    environment:
+      name: production
+      url: https://your-production-domain.com
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create production env for deploy
+        run: |
+          cp .env.example .env
+          mkdir -p config/jwt
+          openssl genrsa -out config/jwt/private.pem 2048
+          openssl rsa -in config/jwt/private.pem -pubout -out config/jwt/public.pem
+
+      - name: Execute Symfony Deployment via AWS CLI SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploying master branch to production server" \
+            --parameters '{"commands":["set -euxo pipefail","echo \"==> Pull latest code from master\"","sudo -u ec2-user -H bash -lc \"cd /var/www/cinehub && git fetch origin master && git checkout master && git reset --hard origin/master && git clean -fd\"","echo \"==> Install Composer dependencies\"","sudo -u ec2-user -H bash -lc \"cd /var/www/cinehub && composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader\"","echo \"==> Clear Symfony cache\"","sudo -u ec2-user -H bash -lc \"cd /var/www/cinehub && APP_ENV=prod php bin/console cache:clear\"","echo \"==> Run Doctrine migrations\"","sudo -u ec2-user -H bash -lc \"cd /var/www/cinehub && APP_ENV=prod php bin/console doctrine:migrations:migrate --no-interaction\"","echo \"==> Restart web server\"","sudo systemctl restart nginx || sudo systemctl restart apache2 || true","echo \"==> Deployment finished successfully\""]}' \
+            --region "${{ secrets.AWS_REGION }}"
