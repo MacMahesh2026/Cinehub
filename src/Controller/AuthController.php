@@ -69,6 +69,17 @@ class AuthController
             ], 400);
         }
 
+        // Enforce the maximum number of registered users
+        if ($entityManager->getRepository(User::class)->count([]) >= User::MAX_USERS) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => sprintf(
+                    'System allows up to %d users only. Registration is closed.',
+                    User::MAX_USERS
+                ),
+            ], 403);
+        }
+
         // Check if email already exists
         $existingUser = $entityManager
             ->getRepository(User::class)

@@ -7,6 +7,7 @@ use App\Entity\BookingSeat;
 use App\Entity\Showtime;
 use App\Entity\Seat;
 use App\Entity\User;
+use App\Repository\BookingRepository;
 use App\Repository\BookingSeatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,6 +42,7 @@ class BookingController extends AbstractController
         Showtime $showtime,
         Request $request,
         EntityManagerInterface $entityManager,
+        BookingRepository $bookingRepository,
         BookingSeatRepository $bookingSeatRepository
     ): Response {
         $seatIds = $request->request->all('seat_ids');
@@ -62,6 +64,20 @@ class BookingController extends AbstractController
 
         if ($user === null) {
             throw $this->createNotFoundException('Test user not found.');
+        }
+
+        if ($bookingRepository->countConfirmedForUser($user) >= Booking::MAX_BOOKINGS_PER_USER) {
+            $this->addFlash(
+                'error',
+                sprintf(
+                    'Maximum %d bookings are allowed per user.',
+                    Booking::MAX_BOOKINGS_PER_USER
+                )
+            );
+
+            return $this->redirectToRoute('showtime_seats', [
+                'id' => $showtime->getId(),
+            ]);
         }
 
         $screen = $showtime->getScreen();

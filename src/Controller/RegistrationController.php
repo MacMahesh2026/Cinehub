@@ -41,24 +41,32 @@ class RegistrationController extends AbstractController
             } elseif (strlen($password) < 8) {
                 $error = 'Password must be at least 8 characters.';
             } else {
-                $existingUser = $entityManager
-                    ->getRepository(User::class)
-                    ->findOneBy(['email' => $email]);
+                $userRepository = $entityManager->getRepository(User::class);
 
-                if ($existingUser !== null) {
-                    $error = 'Email is already registered.';
+                if ($userRepository->count([]) >= User::MAX_USERS) {
+                    $error = sprintf(
+                        'System allows up to %d users only. Registration is closed.',
+                        User::MAX_USERS
+                    );
                 } else {
-                    $user = new User();
-                    $user->setName($name);
-                    $user->setEmail($email);
-                    $user->setPassword($passwordHasher->hashPassword($user, $password));
-                    $user->setRoles(['ROLE_USER']);
+                    $existingUser = $userRepository
+                        ->findOneBy(['email' => $email]);
 
-                    $entityManager->persist($user);
-                    $entityManager->flush();
+                    if ($existingUser !== null) {
+                        $error = 'Email is already registered.';
+                    } else {
+                        $user = new User();
+                        $user->setName($name);
+                        $user->setEmail($email);
+                        $user->setPassword($passwordHasher->hashPassword($user, $password));
+                        $user->setRoles(['ROLE_USER']);
 
-                    $this->addFlash('success', 'Registration successful! Please login.');
-                    return $this->redirectToRoute('app_login');
+                        $entityManager->persist($user);
+                        $entityManager->flush();
+
+                        $this->addFlash('success', 'Registration successful! Please login.');
+                        return $this->redirectToRoute('app_login');
+                    }
                 }
             }
         }
