@@ -1,0 +1,119 @@
+<style>
+    .cinehub-footer {
+        margin-top: 60px;
+        background: #111827;
+        color: #d1d5db;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    .cinehub-footer-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 24px;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        gap: 30px;
+    }
+
+    .cinehub-footer h2 {
+        margin: 0 0 10px;
+        color: #ffffff;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .cinehub-footer p {
+        margin: 0;
+        line-height: 1.6;
+        color: #9ca3af;
+    }
+
+    .cinehub-footer ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .cinehub-footer li {
+        margin-bottom: 7px;
+    }
+
+    .cinehub-footer a {
+        color: #d1d5db;
+        text-decoration: none;
+    }
+
+    .cinehub-footer a:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+
+    .cinehub-footer-brand {
+        color: #ffffff !important;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .cinehub-footer-bottom {
+        border-top: 1px solid #374151;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 14px 20px 20px;
+        color: #9ca3af;
+        font-size: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    @media (max-width: 700px) {
+        .cinehub-footer-inner {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<footer class="cinehub-footer">
+    <div class="cinehub-footer-inner">
+        <div>
+            <a class="cinehub-footer-brand" href="{{ path('home') }}">🎬 CineHub</a>
+            <p>
+                Movie booking made simple. Browse showtimes, choose your seats,
+                and manage your bookings in one place.
+            </p>
+        </div>
+
+        <div>
+            <h2>Help &amp; Policies</h2>
+            <ul>
+                <li><a href="{{ path('help_center') }}">Help Centre</a></li>
+                <li><a href="/documents/support/SUP-002-faq-troubleshooting.pdf" target="_blank" rel="noopener">FAQ &amp; Troubleshooting</a></li>
+                <li><a href="/documents/policies/POL-001-terms-of-service.pdf" target="_blank" rel="noopener">Terms of Service</a></li>
+                <li><a href="/documents/policies/POL-002-privacy-cookies-data-retention-policy.pdf" target="_blank" rel="noopener">Privacy &amp; Data Retention</a></li>
+                <li><a href="/documents/policies/POL-004-booking-seat-cancellation-policy.pdf" target="_blank" rel="noopener">Booking &amp; Cancellation</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h2>Contact</h2>
+            <ul>
+                <li><a href="mailto:support@cinehub.example">support@cinehub.example</a></li>
+                <li><a href="tel:+910000000000">+91 00000 00000</a></li>
+                <li>Mon-Sat, 10:00-18:00 IST</li>
+                <li><a href="/documents/support/SUP-001-customer-support-contact-guide.pdf" target="_blank" rel="noopener">Contact &amp; Support Guide</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="cinehub-footer-bottom">
+        <span>&copy; {{ 'now'|date('Y') }} CineHub. All rights reserved.</span>
+        <span>
+            <a href="/documents/policies/POL-003-account-registration-policy.pdf" target="_blank" rel="noopener">Account Policy</a>
+            &nbsp;·&nbsp;
+            <a href="/documents/support/SUP-003-system-capabilities-limitations.pdf" target="_blank" rel="noopener">System Capabilities</a>
+        </span>
+    </div>
+</footer>
