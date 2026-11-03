@@ -1,56 +1,323 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block title %}Booking Confirmed{% endblock %}
+    <title>Booking Confirmed - CineHub</title>
 
-{% block body %}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-<div style="max-width: 700px; margin: 50px auto; font-family: Arial;">
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
 
-    <h1>Booking Confirmed 🎉</h1>
+        .navbar {
+            background: #111827;
+            color: white;
+            padding: 18px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    <p>Your booking has been successfully created.</p>
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
 
-    <hr>
+        .container {
+            max-width: 760px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
 
-    <h3>Booking Reference</h3>
-    <p><strong>{{ booking.bookingReference }}</strong></p>
+        .success-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
 
-    <h3>Movie</h3>
-    <p>{{ booking.showtime.movie.title }}</p>
+        .success-header {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-    <h3>Theatre</h3>
-    <p>{{ booking.showtime.screen.theatre.name }}</p>
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 32px;
+        }
 
-    <h3>Screen</h3>
-    <p>{{ booking.showtime.screen.name }}</p>
+        .success-header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
 
-    <h3>Showtime</h3>
-    <p>
-        {{ booking.showtime.startTime|date('d M Y, h:i A') }}
-    </p>
+        .success-header p {
+            margin: 0;
+            color: #6b7280;
+        }
 
-    <h3>Seats</h3>
+        .reference-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin: 25px 0;
+            padding: 16px;
+            background: #f9fafb;
+            border: 1px dashed #d1d5db;
+            border-radius: 8px;
+        }
 
-    {% for bookingSeat in booking.bookingSeats %}
-        <span style="
-            display:inline-block;
-            padding:8px 12px;
-            background:#eee;
-            margin:4px;
-            border-radius:5px;
-        ">
-            {{ bookingSeat.seat.seatNumber }}
-        </span>
-    {% endfor %}
+        .reference-label {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
-    <h2>
-        Total: ₹{{ booking.totalAmount }}
-    </h2>
+        .reference-value {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
 
-    <a href="{{ path('home') }}">
-        Back to Movies
-    </a>
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-</div>
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
 
-{% endblock %}
+        .info-label {
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #222;
+        }
+
+        .seats-section {
+            padding: 25px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .seats-section h2 {
+            margin: 0 0 12px;
+            font-size: 18px;
+        }
+
+        .seats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .seat {
+            display: inline-block;
+            background: #e5e7eb;
+            border-radius: 5px;
+            padding: 8px 14px;
+            font-weight: bold;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 0;
+        }
+
+        .total-row span:first-child {
+            color: #6b7280;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .total {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 22px;
+            font-size: 15px;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #111827;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #222;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 18px 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <strong>🎬 CineHub</strong>
+
+    <div>
+        <a href="{{ path('home') }}">Movies</a>
+        <a href="{{ path('my_bookings') }}">My Bookings</a>
+        <a href="{{ path('app_logout') }}">Logout</a>
+    </div>
+</nav>
+
+<main class="container">
+
+    <section class="success-card">
+
+        <div class="success-header">
+
+            <div class="success-icon">✓</div>
+
+            <h1>Booking Confirmed 🎉</h1>
+
+            <p>Your booking has been successfully created.</p>
+
+        </div>
+
+        <div class="reference-box">
+            <span class="reference-label">Booking Reference</span>
+            <span class="reference-value">{{ booking.bookingReference }}</span>
+        </div>
+
+        <div class="info-grid">
+
+            <div class="info-item">
+                <span class="info-label">Movie</span>
+                <span class="info-value">
+                    {{ booking.showtime.movie.title }}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Theatre</span>
+                <span class="info-value">
+                    {{ booking.showtime.screen.theatre.name }}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Screen</span>
+                <span class="info-value">
+                    {{ booking.showtime.screen.name }}
+                </span>
+            </div>
+
+            <div class="info-item">
+                <span class="info-label">Show Time</span>
+                <span class="info-value">
+                    {{ booking.showtime.startTime|date('d M Y, h:i A') }}
+                </span>
+            </div>
+
+        </div>
+
+        <div class="seats-section">
+
+            <h2>Seats</h2>
+
+            <div class="seats">
+                {% for bookingSeat in booking.bookingSeats %}
+                    <span class="seat">
+                        {{ bookingSeat.seat.seatNumber }}
+                    </span>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="total-row">
+            <span>Total Amount</span>
+            <span class="total">₹{{ booking.totalAmount }}</span>
+        </div>
+
+        <div class="actions">
+
+            <a href="{{ path('booking_details', {id: booking.id}) }}" class="btn btn-primary">
+                View Booking Details
+            </a>
+
+            <a href="{{ path('home') }}" class="btn btn-secondary">
+                Back to Movies
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>
