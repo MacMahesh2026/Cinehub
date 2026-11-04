@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Security\JwtCookieFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,6 +14,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class RegistrationController extends AbstractController
 {
+    public function __construct(
+        private JWTTokenManagerInterface $jwtManager,
+        private JwtCookieFactory $cookies,
+    ) {
+    }
+
     #[Route('/register', name: 'app_register')]
     public function register(
         Request $request,
@@ -64,8 +72,14 @@ class RegistrationController extends AbstractController
                         $entityManager->persist($user);
                         $entityManager->flush();
 
-                        $this->addFlash('success', 'Registration successful! Please login.');
-                        return $this->redirectToRoute('app_login');
+                        $this->addFlash('success', 'Registration successful! Welcome.');
+
+                        $response = $this->redirectToRoute('home');
+                        $response->headers->setCookie(
+                            $this->cookies->create($this->jwtManager->create($user), $request)
+                        );
+
+                        return $response;
                     }
                 }
             }

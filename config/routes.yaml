@@ -9,3 +9,8 @@
 
 controllers:
     resource: routing.controllers
+
+# Intercepted by the "api_login" firewall (json_login); it has no controller.
+api_login_check:
+    path: /api/login_check
+    methods: [POST]

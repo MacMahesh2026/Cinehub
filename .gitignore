@@ -24,8 +24,13 @@ config/jwt/public.pem
 /var/log/
 /var/sessions/
 
+### MCP Files ###
+/opencode.json
+/tools/mysql-mcp.php
+
 ### PHPUnit ###
 .phpunit.result.cache
+.phpunit.cache/
 coverage/
 
 ### IDE / OS ###

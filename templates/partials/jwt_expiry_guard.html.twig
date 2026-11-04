@@ -1,0 +1,36 @@
+{#
+    Redirects the browser to the login page as soon as the JWT in the BEARER
+    cookie expires, without waiting for the next protected request.
+#}
+{% set expires_at = jwt_expires_at() %}
+{% if expires_at %}
+    <script>
+        (function () {
+            const expiresAt = {{ expires_at }} * 1000;
+            const loginPath = {{ path('app_login')|json_encode|raw }};
+            const loginUrl = {{ path('app_login', {expired: 1})|json_encode|raw }};
+
+            const redirectToLogin = function () {
+                if (window.location.pathname !== loginPath) {
+                    window.location.assign(loginUrl);
+                }
+            };
+
+            const checkExpiry = function () {
+                if (Date.now() >= expiresAt) {
+                    redirectToLogin();
+                }
+            };
+
+            checkExpiry();
+            window.setTimeout(checkExpiry, Math.max(0, expiresAt - Date.now()));
+            window.setInterval(checkExpiry, 15000);
+
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) {
+                    checkExpiry();
+                }
+            });
+        })();
+    </script>
+{% endif %}
