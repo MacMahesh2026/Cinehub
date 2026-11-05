@@ -4,10 +4,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class AuthController
 {
@@ -15,7 +17,8 @@ class AuthController
     public function register(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        JWTTokenManagerInterface $jwtManager
     ): JsonResponse {
         // Get JSON request body
         $data = json_decode($request->getContent(), true);
@@ -116,6 +119,7 @@ class AuthController
         return new JsonResponse([
             'success' => true,
             'message' => 'Registration successful.',
+            'token' => $jwtManager->create($user),
             'data' => [
                 'id' => $user->getId(),
                 'name' => $user->getName(),
@@ -124,5 +128,19 @@ class AuthController
                 'createdAt' => $user->getCreatedAt()?->format('Y-m-d H:i:s'),
             ]
         ], 201);
+    }
+
+    #[Route('/api/me', name: 'api_me', methods: ['GET'])]
+    public function me(#[CurrentUser] User $user): JsonResponse
+    {
+        return new JsonResponse([
+            'success' => true,
+            'data' => [
+                'id' => $user->getId(),
+                'name' => $user->getName(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles(),
+            ],
+        ]);
     }
 }
