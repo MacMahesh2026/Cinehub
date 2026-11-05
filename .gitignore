@@ -19,6 +19,9 @@ config/jwt/public.pem
 ### Composer ###
 /vendor/
 
+### Symfony generated assets ###
+/public/bundles/
+
 ### Symfony cache/logs ###
 /var/cache/
 /var/log/
@@ -32,6 +35,7 @@ config/jwt/public.pem
 .phpunit.result.cache
 .phpunit.cache/
 coverage/
+/var/test.db*
 
 ### IDE / OS ###
 .idea/
