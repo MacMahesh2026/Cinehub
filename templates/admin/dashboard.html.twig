@@ -1,0 +1,75 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}Dashboard{% endblock %}
+
+{% block main %}
+    <div class="admin-welcome">
+        <h1>Welcome back, {{ app.user.name ?: app.user.userIdentifier }}</h1>
+        <p>Manage the catalogue, bookings, and customers from this console.</p>
+    </div>
+
+    <div class="admin-grid">
+        <section class="admin-card">
+            <h2>Catalogue</h2>
+            <p>Keep the public site up to date.</p>
+            <ul>
+                <li><a href="{{ path('admin_movie_index') }}">Movies</a></li>
+                <li><a href="{{ path('admin_theatre_index') }}">Theatres</a></li>
+                <li><a href="{{ path('admin_screen_index') }}">Screens</a></li>
+                <li><a href="{{ path('admin_seat_index') }}">Seats</a></li>
+                <li><a href="{{ path('admin_showtime_index') }}">Showtimes</a></li>
+            </ul>
+        </section>
+
+        <section class="admin-card">
+            <h2>Bookings</h2>
+            <p>Review customer reservations and their status.</p>
+            <ul>
+                <li><a href="{{ path('admin_booking_index') }}">All bookings</a></li>
+            </ul>
+        </section>
+
+        <section class="admin-card">
+            <h2>Customers</h2>
+            <p>View registered accounts and grant admin access.</p>
+            <ul>
+                <li><a href="{{ path('admin_user_index') }}">Users</a></li>
+            </ul>
+        </section>
+    </div>
+
+    <p class="admin-hint">
+        New admin accounts are created from the command line:
+        <code>php bin/console app:create-admin you@example.com</code>
+    </p>
+
+    <style>
+        .admin-welcome { margin-bottom: 28px; }
+        .admin-welcome h1 { margin: 0 0 8px; font-size: 26px; }
+        .admin-welcome p { margin: 0; color: #6b7280; }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .admin-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .admin-card h2 { margin: 0 0 6px; font-size: 18px; }
+        .admin-card p { margin: 0 0 14px; color: #6b7280; font-size: 14px; }
+        .admin-card ul { margin: 0; padding-left: 18px; }
+        .admin-card li { margin-bottom: 6px; }
+
+        .admin-hint {
+            margin-top: 28px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+{% endblock %}
