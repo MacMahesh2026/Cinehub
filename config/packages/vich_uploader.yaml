@@ -1,0 +1,14 @@
+vich_uploader:
+    db_driver: orm
+    storage: flysystem
+
+    mappings:
+        movie_poster:
+            # Public base URL of the bucket (CloudFront). The object name is
+            # appended to it, e.g. https://cdn.example.com/<file>.jpg
+            uri_prefix: '%env(MOVIE_POSTER_URI_PREFIX)%'
+            # Must match the Flysystem storage name configured in flysystem.yaml.
+            upload_destination: 'movie_posters.storage'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            delete_on_update: true
+            delete_on_remove: true

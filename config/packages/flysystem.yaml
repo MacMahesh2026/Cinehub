@@ -1,0 +1,35 @@
+# Read the documentation at https://github.com/thephpleague/flysystem-bundle/blob/master/docs/1-getting-started.md
+flysystem:
+    storages:
+        default.storage:
+            adapter: 'local'
+            options:
+                directory: '%kernel.project_dir%/var/storage/default'
+
+# Movie posters are stored on local disk while developing/testing and in the
+# S3 bucket in production. Vich resolves the storage by the mapping's
+# "upload_destination", which must match the storage name below.
+when@dev:
+    flysystem:
+        storages:
+            movie_posters.storage:
+                adapter: 'local'
+                options:
+                    directory: '%kernel.project_dir%/public/uploads/movies'
+
+when@test:
+    flysystem:
+        storages:
+            movie_posters.storage:
+                adapter: 'local'
+                options:
+                    directory: '%kernel.project_dir%/var/storage/movie_posters'
+
+when@prod:
+    flysystem:
+        storages:
+            movie_posters.storage:
+                adapter: 'aws'
+                options:
+                    client: 'app.aws.s3_client'
+                    bucket: '%env(AWS_S3_BUCKET)%'
