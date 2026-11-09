@@ -55,6 +55,13 @@
             justify-content: center;
             font-size: 24px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .movie-info h1 {
@@ -132,7 +139,13 @@
     <section class="movie-details">
 
         <div class="poster">
-            🎬 Movie Poster
+            {% if movie.posterName %}
+                <img src="{{ vich_uploader_asset(movie, 'posterFile') }}" alt="{{ movie.title }} poster">
+            {% elseif movie.posterUrl %}
+                <img src="{{ movie.posterUrl }}" alt="{{ movie.title }} poster">
+            {% else %}
+                🎬 Movie Poster
+            {% endif %}
         </div>
 
         <div class="movie-info">

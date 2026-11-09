@@ -22,6 +22,10 @@ config/jwt/public.pem
 ### Symfony generated assets ###
 /public/bundles/
 
+### Local file uploads (dev/test storage) ###
+/public/uploads/
+/var/storage/
+
 ### Symfony cache/logs ###
 /var/cache/
 /var/log/

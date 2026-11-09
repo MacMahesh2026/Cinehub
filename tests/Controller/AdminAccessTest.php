@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\Movie;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -74,6 +75,35 @@ final class AdminAccessTest extends WebTestCase
         self::assertSelectorExists('a[href="/admin/movie"]');
         self::assertSelectorExists('a[href="/admin/booking"]');
         self::assertSelectorExists('a[href="/admin/user"]');
+    }
+
+    public function testMovieFormExposesPosterUploadField(): void
+    {
+        $client = static::createClient();
+        $this->prepareDatabase();
+        $client->loginUser($this->persistUser('admin@example.com', ['ROLE_ADMIN']), 'admin');
+
+        $client->request('GET', '/admin/movie/new');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('input[type="file"][name*="posterFile"]');
+    }
+
+    public function testMovieListRendersThePosterThumbnail(): void
+    {
+        $client = static::createClient();
+        $this->prepareDatabase();
+        $admin = $this->persistUser('admin@example.com', ['ROLE_ADMIN']);
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist((new Movie())->setTitle('Poster Movie')->setPosterName('poster.jpg'));
+        $entityManager->flush();
+
+        $client->loginUser($admin, 'admin');
+        $client->request('GET', '/admin/movie');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('img[src*="poster.jpg"]');
     }
 
     public function testAdminCanOpenEveryCrudList(): void

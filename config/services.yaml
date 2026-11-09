@@ -9,6 +9,8 @@
 parameters:
     # Name of the HttpOnly cookie that carries the JWT for browser requests.
     app.jwt_cookie_name: 'BEARER'
+    # Public base URL used to build movie poster URLs (S3/CloudFront in prod).
+    app.movie_poster_uri_prefix: '%env(MOVIE_POSTER_URI_PREFIX)%'
 
 services:
     # default configuration for services in *this* file
@@ -23,3 +25,13 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # AWS S3 client backing the "movie_posters" Flysystem storage in production.
+    # Credentials come from the default provider chain (env vars or the EC2
+    # instance profile), so no keys are hard-coded here.
+    app.aws.s3_client:
+        class: Aws\S3\S3Client
+        factory: ['Aws\S3\S3Client', 'factory']
+        arguments:
+            - region: '%env(AWS_REGION)%'
+              version: 'latest'

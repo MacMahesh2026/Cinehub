@@ -11,6 +11,8 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.7",
         "easycorp/easyadmin-bundle": "^5.8",
+        "league/flysystem-aws-s3-v3": "^3.35",
+        "league/flysystem-bundle": "^3.7",
         "lexik/jwt-authentication-bundle": "3.2",
         "symfony/console": "8.1.*",
         "symfony/dotenv": "8.1.*",
@@ -22,7 +24,8 @@
         "symfony/security-bundle": "8.1.*",
         "symfony/security-csrf": "8.1.*",
         "symfony/twig-bundle": "8.1.*",
-        "symfony/yaml": "8.1.*"
+        "symfony/yaml": "8.1.*",
+        "vich/uploader-bundle": "^3.0"
     },
     "config": {
         "allow-plugins": {
@@ -72,7 +75,7 @@
     },
     "extra": {
         "symfony": {
-            "allow-contrib": false,
+            "allow-contrib": true,
             "require": "8.1.*"
         }
     },
