@@ -106,6 +106,49 @@ final class ProfileTest extends WebTestCase
         self::assertSelectorTextContains('.form-error', 'at least 8 characters');
     }
 
+    public function testUserCanSaveAWhatsAppNumber(): void
+    {
+        $client = static::createClient();
+        $this->prepareDatabase();
+        $user = $this->persistUser('phone@example.com', 'Phone');
+
+        $this->authenticate($client, $user);
+        $client->request('GET', '/profile');
+
+        $client->submitForm('Save changes', [
+            'profile[name]' => 'Phone',
+            'profile[phone]' => '+919876543210',
+        ]);
+
+        self::assertResponseRedirects('/profile');
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->clear();
+        $reloaded = $entityManager->find(User::class, $user->getId());
+
+        self::assertInstanceOf(User::class, $reloaded);
+        self::assertSame('+919876543210', $reloaded->getPhone());
+    }
+
+    public function testPhoneMustBeInInternationalFormat(): void
+    {
+        $client = static::createClient();
+        $this->prepareDatabase();
+        $user = $this->persistUser('badphone@example.com', 'BadPhone');
+
+        $this->authenticate($client, $user);
+        $client->request('GET', '/profile');
+
+        $client->submitForm('Save changes', [
+            'profile[name]' => 'BadPhone',
+            'profile[phone]' => '98765',
+        ]);
+
+        // Symfony renders invalid form submissions with HTTP 422.
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('.form-error', 'international format');
+    }
+
     private function authenticate(KernelBrowser $client, User $user): void
     {
         /** @var JWTTokenManagerInterface $jwtManager */

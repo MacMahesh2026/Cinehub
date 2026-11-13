@@ -32,6 +32,23 @@ final class ProfileType extends AbstractType
                     new Assert\Length(max: 255),
                 ],
             ])
+            ->add('phone', TextType::class, [
+                'label' => 'WhatsApp number',
+                'required' => false,
+                // Empty input becomes null (the column is nullable).
+                'empty_data' => null,
+                'attr' => [
+                    'autocomplete' => 'tel',
+                    'placeholder' => '+919876543210',
+                ],
+                'help' => 'Optional. Include the country code, e.g. +919876543210.',
+                'constraints' => [
+                    new Assert\Regex(
+                        pattern: '/^\+[1-9]\d{6,14}$/',
+                        message: 'Enter the number in international format, e.g. +919876543210.',
+                    ),
+                ],
+            ])
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 // Not mapped: the controller hashes it into User::$password.

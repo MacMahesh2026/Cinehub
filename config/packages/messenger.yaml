@@ -1,0 +1,22 @@
+framework:
+    messenger:
+        # Failed messages are stored so they can be inspected / retried.
+        failure_transport: failed
+
+        transports:
+            # Async transport (Doctrine table by default). Run a worker with
+            #   php bin/console messenger:consume async
+            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            failed: 'doctrine://default?queue_name=failed'
+            sync: 'sync://'
+
+        routing:
+            App\Message\BookingConfirmedMessage: async
+
+when@test:
+    framework:
+        messenger:
+            transports:
+                # Handle messages inline during tests so assertions can see
+                # the emails/notifications that were produced.
+                async: 'sync://'
