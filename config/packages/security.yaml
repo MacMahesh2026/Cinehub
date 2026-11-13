@@ -77,6 +77,7 @@ security:
         - { path: ^/api/register, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api, roles: ROLE_USER }
         - { path: ^/my-bookings, roles: ROLE_USER }
+        - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/showtime/\d+/book, roles: ROLE_USER }
         - { path: ^/booking, roles: ROLE_USER }
 
