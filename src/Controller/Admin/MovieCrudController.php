@@ -71,7 +71,7 @@ final class MovieCrudController extends AbstractCrudController
         yield Field::new('posterFile', 'Upload poster')
             ->setFormType(FileType::class)
             ->setFormTypeOption('required', false)
-            ->setHelp('JPEG, PNG or WebP up to 2 MB. Uploading replaces the current poster.')
+            ->setHelp('JPEG, PNG or WebP up to 8 MB. Uploading replaces the current poster.')
             ->hideOnIndex()
             ->hideOnDetail();
         yield UrlField::new('posterUrl', 'External poster URL (optional)')->hideOnIndex();
