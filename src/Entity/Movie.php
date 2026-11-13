@@ -71,7 +71,7 @@ class Movie
         originalName: 'posterOriginalName',
     )]
     #[Assert\Image(
-        maxSize: '2M',
+        maxSize: '8M',
         mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
         mimeTypesMessage: 'Please upload a valid image (JPEG, PNG or WebP).',
     )]
