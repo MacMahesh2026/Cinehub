@@ -80,12 +80,17 @@ class Movie
     /**
      * @var Collection<int, Showtime>
      */
-    #[ORM\OneToMany(targetEntity: Showtime::class, mappedBy: 'movie')]
+    #[ORM\OneToMany(targetEntity: Showtime::class, mappedBy: 'movie', cascade: ['remove'])]
     private Collection $showtimes;
 
     public function __construct()
     {
         $this->showtimes = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->title;
     }
 
     public function getId(): ?int
