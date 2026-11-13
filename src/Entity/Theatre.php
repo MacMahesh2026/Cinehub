@@ -27,12 +27,17 @@ class Theatre
     /**
      * @var Collection<int, Screen>
      */
-    #[ORM\OneToMany(targetEntity: Screen::class, mappedBy: 'theatre')]
+    #[ORM\OneToMany(targetEntity: Screen::class, mappedBy: 'theatre', cascade: ['remove'])]
     private Collection $screens;
 
     public function __construct()
     {
         $this->screens = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->name;
     }
 
     public function getId(): ?int

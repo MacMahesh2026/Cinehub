@@ -28,19 +28,30 @@ class Screen
     /**
      * @var Collection<int, Seat>
      */
-    #[ORM\OneToMany(targetEntity: Seat::class, mappedBy: 'screen')]
+    #[ORM\OneToMany(targetEntity: Seat::class, mappedBy: 'screen', cascade: ['remove'])]
     private Collection $seats;
 
     /**
      * @var Collection<int, Showtime>
      */
-    #[ORM\OneToMany(targetEntity: Showtime::class, mappedBy: 'screen')]
+    #[ORM\OneToMany(targetEntity: Showtime::class, mappedBy: 'screen', cascade: ['remove'])]
     private Collection $showtimes;
 
     public function __construct()
     {
         $this->seats = new ArrayCollection();
         $this->showtimes = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        $label = (string) $this->name;
+
+        if (null !== $this->theatre) {
+            $label .= sprintf(' (%s)', $this->theatre->getName());
+        }
+
+        return $label;
     }
 
     public function getId(): ?int

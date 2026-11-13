@@ -44,6 +44,17 @@ class Showtime
         $this->bookings = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+        $label = (string) $this->movie;
+
+        if (null !== $this->startTime) {
+            $label .= sprintf(' — %s', $this->startTime->format('d M Y, H:i'));
+        }
+
+        return $label;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

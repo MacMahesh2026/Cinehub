@@ -49,6 +49,11 @@ class Booking
         $this->bookingSeats = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->bookingReference;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
