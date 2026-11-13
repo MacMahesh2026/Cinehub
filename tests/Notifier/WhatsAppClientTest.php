@@ -76,6 +76,16 @@ final class WhatsAppClientTest extends TestCase
         self::assertStringContainsString('not configured', $logger->records[0]['message']);
     }
 
+    public function testItCanTargetAnAlternateGraphHost(): void
+    {
+        $client = $this->createClient('123456789', 'test-token', baseUri: 'http://127.0.0.1:8090/');
+
+        $client->sendBookingConfirmation('+919876543210', ['Mahesh', 'BK-0001']);
+
+        self::assertCount(1, $this->requests);
+        self::assertSame('http://127.0.0.1:8090/v21.0/123456789/messages', $this->requests[0]['url']);
+    }
+
     public function testItThrowsWhenTheGraphApiRejectsTheMessage(): void
     {
         $client = $this->createClient('123456789', 'test-token', response: new MockResponse(
@@ -94,6 +104,7 @@ final class WhatsAppClientTest extends TestCase
         string $token,
         ?AbstractLogger $logger = null,
         ?MockResponse $response = null,
+        string $baseUri = 'https://graph.facebook.com',
     ): WhatsAppClient {
         $this->requests = [];
 
@@ -106,6 +117,7 @@ final class WhatsAppClientTest extends TestCase
         return new WhatsAppClient(
             $httpClient,
             $logger ?? $this->createRecordingLogger(),
+            $baseUri,
             'v21.0',
             $phoneNumberId,
             $token,

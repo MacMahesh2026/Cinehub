@@ -24,6 +24,8 @@ final readonly class WhatsAppClient
     public function __construct(
         private HttpClientInterface $httpClient,
         private LoggerInterface $logger,
+        #[Autowire('%env(default:app.whatsapp_base_uri:WHATSAPP_BASE_URI)%')]
+        private string $baseUri,
         #[Autowire('%env(WHATSAPP_GRAPH_VERSION)%')]
         private string $graphVersion,
         #[Autowire('%env(WHATSAPP_PHONE_NUMBER_ID)%')]
@@ -50,7 +52,8 @@ final readonly class WhatsAppClient
         }
 
         $url = sprintf(
-            'https://graph.facebook.com/%s/%s/messages',
+            '%s/%s/%s/messages',
+            rtrim($this->baseUri, '/'),
             $this->graphVersion,
             $this->phoneNumberId,
         );

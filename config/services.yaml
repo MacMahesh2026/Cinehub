@@ -11,6 +11,9 @@ parameters:
     app.jwt_cookie_name: 'BEARER'
     # Public base URL used to build movie poster URLs (S3/CloudFront in prod).
     app.movie_poster_uri_prefix: '%env(MOVIE_POSTER_URI_PREFIX)%'
+    # Base URL of the WhatsApp Graph API. Override with WHATSAPP_BASE_URI to
+    # point the client at a local mock while developing.
+    app.whatsapp_base_uri: 'https://graph.facebook.com'
 
 services:
     # default configuration for services in *this* file

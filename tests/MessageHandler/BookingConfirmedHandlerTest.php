@@ -117,6 +117,7 @@ final class BookingConfirmedHandlerTest extends KernelTestCase
         static::getContainer()->set(WhatsAppClient::class, new WhatsAppClient(
             $httpClient,
             new NullLogger(),
+            'https://graph.facebook.com',
             'v21.0',
             '123456789',
             'test-token',
