@@ -1,0 +1,20 @@
+CineHub — Booking confirmed
+
+Hi {{ booking.user.name }},
+
+Your booking is confirmed.
+
+Booking reference: {{ booking.bookingReference }}
+
+Movie:   {{ booking.showtime.movie.title }}
+Theatre: {{ booking.showtime.screen.theatre.name }}
+Screen:  {{ booking.showtime.screen.name }}
+Show time: {{ booking.showtime.startTime|date('d M Y, h:i A') }}
+Seats:   {% for bookingSeat in booking.bookingSeats %}{{ bookingSeat.seat.seatNumber }}{{ not loop.last ? ', ' }}{% endfor %}
+
+Total paid: INR {{ booking.totalAmount }}
+
+Please arrive at least 15 minutes before showtime. You can view or cancel this
+booking from your account.
+
+CineHub · support@cinehub.example

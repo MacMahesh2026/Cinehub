@@ -25,6 +25,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 64, unique: true)]
     private ?string $email = null;
 
+    /**
+     * WhatsApp / SMS number in E.164 format (e.g. +919876543210).
+     * Optional: notifications are only sent when a number is present.
+     */
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $phone = null;
+
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
@@ -76,6 +83,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): static
+    {
+        $this->phone = $phone;
 
         return $this;
     }

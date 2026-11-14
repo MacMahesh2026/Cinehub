@@ -34,6 +34,7 @@ config/jwt/public.pem
 ### MCP Files ###
 /opencode.json
 /tools/mysql-mcp.php
+/tools/whatsapp-mock.php
 
 ### PHPUnit ###
 .phpunit.result.cache

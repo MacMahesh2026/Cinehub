@@ -7,12 +7,15 @@ use App\Entity\BookingSeat;
 use App\Entity\Showtime;
 use App\Entity\Seat;
 use App\Entity\User;
+use App\Message\BookingConfirmedMessage;
+use App\Message\BookingWhatsAppMessage;
 use App\Repository\BookingRepository;
 use App\Repository\BookingSeatRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -43,7 +46,8 @@ class BookingController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         BookingRepository $bookingRepository,
-        BookingSeatRepository $bookingSeatRepository
+        BookingSeatRepository $bookingSeatRepository,
+        MessageBusInterface $bus
     ): Response {
         $seatIds = $request->request->all('seat_ids');
 
@@ -149,6 +153,13 @@ class BookingController extends AbstractController
         }
 
         $entityManager->flush();
+
+        // Hand off the confirmation email and WhatsApp message to the async
+        // transport so a slow or failing provider never blocks the booking.
+        // They are separate messages so one channel's failure cannot retry
+        // (and duplicate) the other.
+        $bus->dispatch(new BookingConfirmedMessage($booking->getId()));
+        $bus->dispatch(new BookingWhatsAppMessage($booking->getId()));
 
         return $this->redirectToRoute('booking_confirmation', [
             'id' => $booking->getId(),
