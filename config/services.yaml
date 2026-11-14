@@ -14,6 +14,13 @@ parameters:
     # Base URL of the WhatsApp Graph API. Override with WHATSAPP_BASE_URI to
     # point the client at a local mock while developing.
     app.whatsapp_base_uri: 'https://graph.facebook.com'
+    # Fallbacks so the app boots (and email keeps working) before WhatsApp is
+    # configured. An empty phone number id or token makes WhatsApp a no-op.
+    app.whatsapp_graph_version: 'v21.0'
+    app.whatsapp_phone_number_id: ''
+    app.whatsapp_token: ''
+    app.whatsapp_template: 'booking_confirmation'
+    app.whatsapp_template_lang: 'en'
 
 services:
     # default configuration for services in *this* file

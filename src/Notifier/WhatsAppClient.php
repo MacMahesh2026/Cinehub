@@ -26,15 +26,15 @@ final readonly class WhatsAppClient
         private LoggerInterface $logger,
         #[Autowire('%env(default:app.whatsapp_base_uri:WHATSAPP_BASE_URI)%')]
         private string $baseUri,
-        #[Autowire('%env(WHATSAPP_GRAPH_VERSION)%')]
+        #[Autowire('%env(default:app.whatsapp_graph_version:WHATSAPP_GRAPH_VERSION)%')]
         private string $graphVersion,
-        #[Autowire('%env(WHATSAPP_PHONE_NUMBER_ID)%')]
+        #[Autowire('%env(default:app.whatsapp_phone_number_id:WHATSAPP_PHONE_NUMBER_ID)%')]
         private string $phoneNumberId,
-        #[Autowire('%env(WHATSAPP_TOKEN)%')]
+        #[Autowire('%env(default:app.whatsapp_token:WHATSAPP_TOKEN)%')]
         private string $token,
-        #[Autowire('%env(WHATSAPP_TEMPLATE)%')]
+        #[Autowire('%env(default:app.whatsapp_template:WHATSAPP_TEMPLATE)%')]
         private string $template,
-        #[Autowire('%env(WHATSAPP_TEMPLATE_LANG)%')]
+        #[Autowire('%env(default:app.whatsapp_template_lang:WHATSAPP_TEMPLATE_LANG)%')]
         private string $templateLang,
     ) {
     }

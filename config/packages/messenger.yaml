@@ -12,6 +12,7 @@ framework:
 
         routing:
             App\Message\BookingConfirmedMessage: async
+            App\Message\BookingWhatsAppMessage: async
 
 when@test:
     framework:

@@ -14,6 +14,7 @@
         "league/flysystem-aws-s3-v3": "^3.35",
         "league/flysystem-bundle": "^3.7",
         "lexik/jwt-authentication-bundle": "3.2",
+        "symfony/brevo-mailer": "8.1.*",
         "symfony/console": "8.1.*",
         "symfony/doctrine-messenger": "8.1.*",
         "symfony/dotenv": "8.1.*",

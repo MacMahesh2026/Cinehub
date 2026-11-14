@@ -8,6 +8,7 @@ use App\Entity\Showtime;
 use App\Entity\Seat;
 use App\Entity\User;
 use App\Message\BookingConfirmedMessage;
+use App\Message\BookingWhatsAppMessage;
 use App\Repository\BookingRepository;
 use App\Repository\BookingSeatRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -153,9 +154,12 @@ class BookingController extends AbstractController
 
         $entityManager->flush();
 
-        // Hand off the confirmation email / WhatsApp message to the async
+        // Hand off the confirmation email and WhatsApp message to the async
         // transport so a slow or failing provider never blocks the booking.
+        // They are separate messages so one channel's failure cannot retry
+        // (and duplicate) the other.
         $bus->dispatch(new BookingConfirmedMessage($booking->getId()));
+        $bus->dispatch(new BookingWhatsAppMessage($booking->getId()));
 
         return $this->redirectToRoute('booking_confirmation', [
             'id' => $booking->getId(),

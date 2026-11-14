@@ -4,7 +4,6 @@ namespace App\MessageHandler;
 
 use App\Entity\Booking;
 use App\Message\BookingConfirmedMessage;
-use App\Notifier\WhatsAppClient;
 use App\Repository\BookingRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -13,11 +12,11 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
- * Sends the booking confirmation email (via the configured mailer) and, when
- * the customer has a phone number on file, a WhatsApp template message.
+ * Sends the booking confirmation email (via the configured mailer).
  *
  * Runs on the async transport, so a slow or unavailable provider never delays
- * or breaks the customer's booking request.
+ * or breaks the customer's booking request. WhatsApp is handled by a separate
+ * message so a WhatsApp failure can never cause a duplicate email.
  */
 #[AsMessageHandler]
 final readonly class BookingConfirmedHandler
@@ -25,7 +24,6 @@ final readonly class BookingConfirmedHandler
     public function __construct(
         private BookingRepository $bookings,
         private MailerInterface $mailer,
-        private WhatsAppClient $whatsApp,
         private LoggerInterface $logger,
         #[Autowire('%env(MAILER_FROM)%')]
         private string $from,
@@ -45,7 +43,6 @@ final readonly class BookingConfirmedHandler
         }
 
         $this->sendEmail($booking);
-        $this->sendWhatsApp($booking);
     }
 
     private function sendEmail(Booking $booking): void
@@ -61,26 +58,9 @@ final readonly class BookingConfirmedHandler
             ->to($user->getEmail())
             ->subject(sprintf('Your CineHub booking %s is confirmed', $booking->getBookingReference()))
             ->htmlTemplate('emails/booking_confirmed.html.twig')
+            ->textTemplate('emails/booking_confirmed.txt.twig')
             ->context(['booking' => $booking]);
 
         $this->mailer->send($email);
-    }
-
-    private function sendWhatsApp(Booking $booking): void
-    {
-        $user = $booking->getUser();
-
-        if (null === $user || null === $user->getPhone()) {
-            return;
-        }
-
-        // Order must match the {{1}}, {{2}}, ... placeholders of the approved
-        // "booking_confirmation" utility template in Meta's WhatsApp Manager.
-        $this->whatsApp->sendBookingConfirmation($user->getPhone(), [
-            $user->getName() ?? 'there',
-            $booking->getBookingReference() ?? '',
-            $booking->getShowtime()?->getMovie()?->getTitle() ?? '',
-            $booking->getShowtime()?->getStartTime()?->format('d M Y, h:i A') ?? '',
-        ]);
     }
 }

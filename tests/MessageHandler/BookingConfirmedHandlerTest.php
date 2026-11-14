@@ -11,6 +11,7 @@ use App\Entity\Showtime;
 use App\Entity\Theatre;
 use App\Entity\User;
 use App\Message\BookingConfirmedMessage;
+use App\Message\BookingWhatsAppMessage;
 use App\Notifier\WhatsAppClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -40,7 +41,8 @@ final class BookingConfirmedHandlerTest extends KernelTestCase
         $booking = $this->persistBooking($user);
         $this->installWhatsAppSpy();
 
-        $this->dispatch($booking);
+        $this->dispatch(new BookingConfirmedMessage($booking->getId()));
+        $this->dispatch(new BookingWhatsAppMessage($booking->getId()));
 
         self::assertEmailCount(1);
 
@@ -50,6 +52,7 @@ final class BookingConfirmedHandlerTest extends KernelTestCase
         self::assertEmailSubjectContains($email, $booking->getBookingReference());
         self::assertEmailHtmlBodyContains($email, 'Inception');
         self::assertEmailHtmlBodyContains($email, $booking->getBookingReference());
+        self::assertEmailTextBodyContains($email, $booking->getBookingReference());
 
         self::assertCount(1, $this->requests, 'The customer should receive a WhatsApp message.');
         self::assertSame('POST', $this->requests[0]['method']);
@@ -72,12 +75,40 @@ final class BookingConfirmedHandlerTest extends KernelTestCase
         $booking = $this->persistBooking($user);
         $this->installWhatsAppSpy();
 
-        $this->dispatch($booking);
+        $this->dispatch(new BookingConfirmedMessage($booking->getId()));
+        $this->dispatch(new BookingWhatsAppMessage($booking->getId()));
 
         self::assertEmailCount(1);
         self::assertEmailAddressContains(self::getMailerMessage(), 'To', 'nophone@example.com');
 
         self::assertCount(0, $this->requests, 'No WhatsApp message should be sent without a phone number.');
+    }
+
+    public function testAFailingWhatsAppDoesNotAffectTheEmail(): void
+    {
+        self::bootKernel();
+        $this->prepareDatabase();
+
+        $user = $this->persistUser('buyer@example.com', 'Buyer', '+919876543210');
+        $booking = $this->persistBooking($user);
+
+        // The Graph API is down; the WhatsApp message fails, the email must not.
+        $this->installWhatsAppSpy(new MockResponse('{"error":{"message":"down"}}', ['http_code' => 503]));
+
+        $this->dispatch(new BookingConfirmedMessage($booking->getId()));
+
+        self::assertEmailCount(1);
+
+        $thrown = null;
+
+        try {
+            $this->dispatch(new BookingWhatsAppMessage($booking->getId()));
+        } catch (\Throwable $e) {
+            $thrown = $e;
+        }
+
+        self::assertNotNull($thrown, 'The WhatsApp failure should surface so Messenger can retry it.');
+        self::assertEmailCount(1, null, 'The WhatsApp retry must not send a second email.');
     }
 
     public function testItIgnoresAnUnknownBooking(): void
@@ -86,30 +117,27 @@ final class BookingConfirmedHandlerTest extends KernelTestCase
         $this->prepareDatabase();
 
         $this->dispatch(new BookingConfirmedMessage(999999));
+        $this->dispatch(new BookingWhatsAppMessage(999999));
 
         self::assertEmailCount(0);
         self::assertCount(0, $this->requests);
     }
 
-    private function dispatch(Booking|BookingConfirmedMessage $bookingOrMessage): void
+    private function dispatch(BookingConfirmedMessage|BookingWhatsAppMessage $message): void
     {
-        $message = $bookingOrMessage instanceof Booking
-            ? new BookingConfirmedMessage($bookingOrMessage->getId())
-            : $bookingOrMessage;
-
         /** @var MessageBusInterface $bus */
         $bus = static::getContainer()->get(MessageBusInterface::class);
         $bus->dispatch($message);
     }
 
-    private function installWhatsAppSpy(): void
+    private function installWhatsAppSpy(?MockResponse $response = null): void
     {
         $this->requests = [];
 
-        $httpClient = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
+        $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use ($response): MockResponse {
             $this->requests[] = ['method' => $method, 'url' => $url, 'options' => $options];
 
-            return new MockResponse('{"messages":[{"id":"wamid.TEST"}]}', ['http_code' => 200]);
+            return $response ?? new MockResponse('{"messages":[{"id":"wamid.TEST"}]}', ['http_code' => 200]);
         });
 
         // Replace the configured client so the handler exercises a real Graph
